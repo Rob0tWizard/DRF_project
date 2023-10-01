@@ -8,9 +8,10 @@ from .models import Base
 
 
 class BaseSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     class Meta:
         model=Base
-        fields=('title','content','cat') # __all__ - для всех полей
+        fields=('title','content','cat', 'user', 'is_published' ) # __all__ - для всех полей
 
 # class BaseModel:
 #     def __init__(self, title, content):

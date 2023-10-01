@@ -3,40 +3,60 @@ from django.shortcuts import render
 from rest_framework import generics, viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.generics import ListCreateAPIView
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from .models import Base, Category
+from .models import *
+from .permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
 from .serializers import BaseSerializer
 from rest_framework.views import APIView
 
 
-#class BaseViewSet(viewsets.ModelViewSet):               #один этот вьюсет заменяетнам все 3 ручных класса номер 2!
+# class BaseViewSet(viewsets.ModelViewSet):  # один этот вьюсет заменяетнам все 3 ручных класса номер 2!
 class BaseViewSet(mixins.CreateModelMixin,
                   mixins.RetrieveModelMixin,
                   mixins.UpdateModelMixin,
                   mixins.ListModelMixin,
                   mixins.DestroyModelMixin,
                   GenericViewSet):
-
-    queryset = Base.objects.all()
+    # queryset = Women.objects.all()
     serializer_class = BaseSerializer
+    permission_classes = (IsAdminOrReadOnly,)
 
-        #если не хватает функционала роутера инужны иные урл выводы, исп ДЕКОРАТОР экшен
-    @action(methods=['get'], detail=True)       #детаил фолс выдает список записей, тру - одну
-    def category(self, request, pk=None):                 #новый маршрут формируется по имени метода
-        cats= Category.objects.get(pk=pk)
+
+    def get_queryset(self):
+        pk = self.kwargs.get("pk")
+
+        if not pk:
+            return Base.objects.all()[:3]
+
+        return Base.objects.filter(pk=pk)
+
+    @action(methods=['get'], detail=True)
+    def category(self, request, pk=None):
+        cats = Category.objects.get(pk=pk)
         return Response({'cats': cats.name})
 
 #           РАБОТА РУЧКАМИ, РУЧНЫЕ ПРЕДСТАВЛЕНИЯ,номер 2 !
 # class BaseApiList(generics.ListCreateAPIView):
 #     queryset = Base.objects.all()
 #     serializer_class = BaseSerializer
+#     permission_classes = (IsAuthenticatedOrReadOnly, )
 #
 #
+# #
+# #
 # class BaseApiUpdate(generics.UpdateAPIView):
 #     queryset = Base.objects.all()  # отправляться будет только одна измененная запись,тк это ленивый запрос
 #     serializer_class = BaseSerializer  # базовый класс сам обработает запрос вернет только изм запись
+#     permission_classes = (IsOwnerOrReadOnly, )
+
+# class BaseApiDestroy(generics.RetrieveUpdateAPIView):
+#     queryset = Base.objects.all()
+#     serializer_class = BaseSerializer
+#     permission_classes = (IsAdminOrReadOnly, )
+
 #
 #
 # class BaseApiDetailView(generics.RetrieveUpdateDestroyAPIView):
