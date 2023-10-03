@@ -1,9 +1,10 @@
 from django.forms import model_to_dict
 from django.shortcuts import render
 from rest_framework import generics, viewsets, mixins
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
 from rest_framework.generics import ListCreateAPIView
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -22,7 +23,8 @@ class BaseViewSet(mixins.CreateModelMixin,
                   GenericViewSet):
     # queryset = Women.objects.all()
     serializer_class = BaseSerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (IsAuthenticated , )#IsAdminOrReadOnly,)
+    #authentication_classes = (TokenAuthentication, )       # ВКЛ аутентификация по токену для этого класса!
 
 
     def get_queryset(self):
