@@ -4,6 +4,7 @@ from rest_framework import generics, viewsets, mixins
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
 from rest_framework.generics import ListCreateAPIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -14,24 +15,31 @@ from .serializers import BaseSerializer
 from rest_framework.views import APIView
 
 
-# class BaseViewSet(viewsets.ModelViewSet):  # один этот вьюсет заменяетнам все 3 ручных класса номер 2!
+class BaseViewSetPagination(PageNumberPagination):       #пагинатор, выдает определенное количество записей на страницу, по умолчанию в настроках(!) - 5
+    page_size = 10          #но наш класс будет выдавать по 10 записей на сраницу
+    page_query_param = 'page_size' #если в ручную в адресной строке попытаться увеличить количество записей, сработаетстрока ниже
+    max_page_size = 1
+
+
+# class BaseViewSet(viewsets.ModelViewSet):  # один этот вьюсет заменяет нам все 3 ручных класса номер 2!
 class BaseViewSet(mixins.CreateModelMixin,
                   mixins.RetrieveModelMixin,
                   mixins.UpdateModelMixin,
                   mixins.ListModelMixin,
                   mixins.DestroyModelMixin,
                   GenericViewSet):
-    # queryset = Women.objects.all()
+    # queryset = Base.objects.all()
     serializer_class = BaseSerializer
-    permission_classes = (IsAuthenticated , )#IsAdminOrReadOnly,)
+    permission_classes = (IsAuthenticated, IsAdminOrReadOnly,)
     #authentication_classes = (TokenAuthentication, )       # ВКЛ аутентификация по токену для этого класса!
+    pagination_class = BaseViewSetPagination
 
 
     def get_queryset(self):
         pk = self.kwargs.get("pk")
 
         if not pk:
-            return Base.objects.all()[:3]
+            return Base.objects.all()
 
         return Base.objects.filter(pk=pk)
 
